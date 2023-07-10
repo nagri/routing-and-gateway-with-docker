@@ -1,0 +1,109 @@
+version: "3.3"
+
+services:
+
+  alice:
+    image: ubuntu-with-tools
+    cap_add:
+      - NET_ADMIN
+    hostname: alice
+    networks:
+      moon-internal:
+        ipv4_address: 192.168.128.3
+      jupiter-internal:
+        ipv4_address: 192.168.131.3
+    command: >-
+      sh -c "ip route del default &&
+      ip route add default via 192.168.128.2 &&
+      tail -f /dev/null"
+
+  moon:
+    image: ubuntu-with-tools
+    cap_add:
+      - NET_ADMIN
+    hostname: moon
+    networks:
+      moon-internal:
+        ipv4_address: 192.168.128.2
+      internet:
+        ipv4_address: 192.168.130.2
+    command: >-
+      sh -c "iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE &&
+      iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE &&
+      iptables -A FORWARD -i eth1 -j ACCEPT &&
+      iptables -A FORWARD -i eth0 -j ACCEPT &&
+      ip route add 192.168.129.0/24 via 192.168.130.4 &&
+      tail -f /dev/null"
+
+  jupiter:
+    image: ubuntu-with-tools
+    cap_add:
+      - NET_ADMIN
+    hostname: jupiter
+    networks:
+      jupiter-internal:
+        ipv4_address: 192.168.131.2
+      internet:
+        ipv4_address: 192.168.130.5
+    command: >-
+      sh -c "iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE &&
+      iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE &&
+      iptables -A FORWARD -i eth1 -j ACCEPT &&
+      iptables -A FORWARD -i eth0 -j ACCEPT &&
+      ip route add 192.168.129.0/24 via 192.168.130.4 &&
+      tail -f /dev/null"
+
+  sun:
+    image: ubuntu-with-tools
+    cap_add:
+      - NET_ADMIN
+    hostname: sun
+    networks:
+      sun-internal:
+        ipv4_address: 192.168.129.4
+      internet:
+        ipv4_address: 192.168.130.4
+    command: >-
+      sh -c "iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE &&
+      iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE &&
+      iptables -A FORWARD -i eth1 -j ACCEPT &&
+      iptables -A FORWARD -i eth0 -j ACCEPT &&
+      ip route add 192.168.128.0/24 via 192.168.130.2 &&
+      tail -f /dev/null"
+  
+  
+  bob:
+    image: ubuntu-with-tools
+    cap_add:
+      - NET_ADMIN
+    hostname: bob
+    networks:
+      sun-internal:
+        ipv4_address: 192.168.129.5
+    command: >-
+      sh -c "ip route del default &&
+      ip route add default via 192.168.129.4 &&
+      tail -f /dev/null"
+
+
+networks:
+  moon-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.128.0/24
+  jupiter-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.131.0/24
+  sun-internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.129.0/24
+  internet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.130.0/24
