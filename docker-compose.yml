@@ -4,9 +4,12 @@ services:
 
   alice:
     image: ubuntu-with-tools
+    container_name: alice
     cap_add:
       - NET_ADMIN
     hostname: alice
+    extra_hosts:
+        - "bob:192.168.129.5"
     networks:
       moon-internal:
         ipv4_address: 192.168.128.3
@@ -19,6 +22,7 @@ services:
 
   moon:
     image: ubuntu-with-tools
+    container_name: moon
     cap_add:
       - NET_ADMIN
     hostname: moon
@@ -37,6 +41,7 @@ services:
 
   jupiter:
     image: ubuntu-with-tools
+    container_name: jupiter
     cap_add:
       - NET_ADMIN
     hostname: jupiter
@@ -55,6 +60,7 @@ services:
 
   sun:
     image: ubuntu-with-tools
+    container_name: sun
     cap_add:
       - NET_ADMIN
     hostname: sun
@@ -74,9 +80,12 @@ services:
   
   bob:
     image: ubuntu-with-tools
+    container_name: bob
     cap_add:
       - NET_ADMIN
     hostname: bob
+    extra_hosts:
+        - "alice:192.168.128.3"
     networks:
       sun-internal:
         ipv4_address: 192.168.129.5
